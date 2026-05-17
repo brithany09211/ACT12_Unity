@@ -3,21 +3,17 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public float speed = 5f;
     private Rigidbody2D rb;
-
-    public float speed = 9f;
-    public float jumpForce = 9f;
-
     private float moveX;
-
-    public bool isGrounded = false;
+    public float jumpForce = 9f;
+    public bool isGrounded;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>(); // inicializacion de la capsula
+        rb = GetComponent<Rigidbody2D>();
     }
 
-    // lectura de lo que pulsamos en tecladp
     public void OnMove(InputValue value)
     {
         Vector2 moveInput = value.Get<Vector2>();
@@ -27,18 +23,34 @@ public class PlayerMovement : MonoBehaviour
     public void OnJump(InputValue value)
     {
         if (isGrounded)
-        {   // salta manteniendo la velocidad horizontal (x), que se deja a la fisica
+        {   
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
         }
     }
 
+    void Update()
+    {
+        Flip();
+    }
+
     void FixedUpdate()
     {
-        // controlamos solo movimiento horizontal (x), vertical (y) se deja a la fisica
         rb.linearVelocity = new Vector2(moveX * speed, rb.linearVelocity.y);
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void Flip()
+    {
+        if (moveX > 0.01f)
+        {
+            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+        }
+        else if (moveX < -0.01f)
+        {
+            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))  
         {
@@ -46,13 +58,11 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void OnTriggerExit2D(Collider2D collision)
+    private void OnCollisionExit2D(Collision2D collision)
     {
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground")) 
         {
-            {
-                isGrounded = false; 
-            }
+            isGrounded = false; 
         }
     }
 }
